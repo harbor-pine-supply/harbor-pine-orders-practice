@@ -6,16 +6,34 @@ on:
   push:
     branches: [main]
 
+# The token gets read-only access by default; jobs ask for more only if they need it.
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       # The same one command people run locally
       - run: npm run check
+
+  # What a cloud provider would trust instead of a stored secret: this job's OIDC token.
+  # Prints the token's claims only, never the token itself.
+  oidc-claims:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Show the OIDC token's claims (not the token)
+        run: |
+          TOKEN=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange" | jq -r .value)
+          echo "$TOKEN" | python3 -c 'import sys,json,base64; p=sys.stdin.read().split(".")[1]; p+="="*(-len(p)%4); c=json.loads(base64.urlsafe_b64decode(p)); print(json.dumps({k: c.get(k) for k in ["iss","aud","sub","repository","ref","event_name"]}, indent=2))'
 
   deploy:
     if: github.event_name == 'push'
