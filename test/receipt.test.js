@@ -7,6 +7,10 @@ test("receipt line pads the name and right-aligns the amount", () => {
   assert.equal(receiptLine("Cedar planter box", 3048).length, 32);
 });
 
+test("discount line shows the amount off", () => {
+  assert.equal(receiptLine("Discount", -457).endsWith("-$4.57"), true);
+});
+
 test("tax line rounds to the nearest cent", () => {
   assert.equal(receiptLine("Sales tax", 251).endsWith("$2.51"), true);
 });
