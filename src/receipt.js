@@ -5,3 +5,8 @@ export function receiptLine(name, cents, width = 32) {
   const amount = formatCents(cents);
   return name.slice(0, width - amount.length - 1).padEnd(width - amount.length) + amount;
 }
+
+// A discount line: the amount off, shown as a negative.
+export function discountLine(cents) {
+  return receiptLine("Discount", -cents);
+}
