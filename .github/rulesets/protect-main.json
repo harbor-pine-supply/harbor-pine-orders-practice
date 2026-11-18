@@ -36,6 +36,9 @@
         "required_status_checks": [
           {
             "context": "check"
+          },
+          {
+            "context": "dependency-review"
           }
         ]
       }
